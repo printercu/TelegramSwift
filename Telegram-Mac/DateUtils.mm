@@ -373,52 +373,33 @@ static inline NSString *dialogTimeFormat()
     struct tm timeinfo_now;
     localtime_r(&t_now, &timeinfo_now);
     
-    if (timeinfo.tm_year != timeinfo_now.tm_year)
+    int dayDiff = timeinfo.tm_yday - timeinfo_now.tm_yday;// daysBetween(t_now, t);
+            
+    if(dayDiff == 0)
     {
-        if (value_monthFirst)
-            return [[NSString alloc] initWithFormat:@"%d%c%d%c%02d", timeinfo.tm_mon + 1, value_date_separator, timeinfo.tm_mday, value_date_separator, timeinfo.tm_year - 100];
+        if (dateHas12hFormat())
+        {
+            if (timeinfo.tm_hour < 12)
+                return [[NSString alloc] initWithFormat:@"%d:%02d AM", timeinfo.tm_hour == 0 ? 12 : timeinfo.tm_hour, timeinfo.tm_min];
+            else
+                return [[NSString alloc] initWithFormat:@"%d:%02d PM", (timeinfo.tm_hour - 12 == 0) ? 12 : (timeinfo.tm_hour - 12), timeinfo.tm_min];
+        }
         else
-            return [[NSString alloc] initWithFormat:@"%d%c%02d%c%02d", timeinfo.tm_mday, value_date_separator, timeinfo.tm_mon + 1, value_date_separator, timeinfo.tm_year - 100];
+            return [[NSString alloc] initWithFormat:@"%02d:%02d", timeinfo.tm_hour, timeinfo.tm_min];
     }
+    else if(dayDiff > -7) 
+        return weekdayNameShort(timeinfo.tm_wday);
+    /*else if (true || (dayDiff > -180 && dayDiff <= -7))
+    {
+        if (dialogTimeMonthNameFirst())
+            return [[NSString alloc] initWithFormat:@"%@ %d", monthNameGenShort(timeinfo.tm_mon), timeinfo.tm_mday];
+        else
+            return [[NSString alloc] initWithFormat:@"%d %@", timeinfo.tm_mday, monthNameGenShort(timeinfo.tm_mon)];
+    }*/
+    else if (value_monthFirst)
+        return [[NSString alloc] initWithFormat:@"%d%c%d%c%02d", timeinfo.tm_mon + 1, value_date_separator, timeinfo.tm_mday, value_date_separator, timeinfo.tm_year - 100];
     else
-    {   
-        int dayDiff = timeinfo.tm_yday - timeinfo_now.tm_yday;// daysBetween(t_now, t);
-        
-        if(dayDiff == 0)
-        {
-            if (dateHas12hFormat())
-            {
-                if (timeinfo.tm_hour < 12)
-                    return [[NSString alloc] initWithFormat:@"%d:%02d AM", timeinfo.tm_hour == 0 ? 12 : timeinfo.tm_hour, timeinfo.tm_min];
-                else
-                    return [[NSString alloc] initWithFormat:@"%d:%02d PM", (timeinfo.tm_hour - 12 == 0) ? 12 : (timeinfo.tm_hour - 12), timeinfo.tm_min];
-            }
-            else
-                return [[NSString alloc] initWithFormat:@"%02d:%02d", timeinfo.tm_hour, timeinfo.tm_min];
-        }
-        else if(dayDiff == -1)
-            return weekdayNameShort(timeinfo.tm_wday);
-        else if(dayDiff == -2) 
-            return weekdayNameShort(timeinfo.tm_wday);
-        else if(dayDiff > -7 && dayDiff <= -2) 
-            return weekdayNameShort(timeinfo.tm_wday);
-        /*else if (true || (dayDiff > -180 && dayDiff <= -7))
-        {
-            if (dialogTimeMonthNameFirst())
-                return [[NSString alloc] initWithFormat:@"%@ %d", monthNameGenShort(timeinfo.tm_mon), timeinfo.tm_mday];
-            else
-                return [[NSString alloc] initWithFormat:@"%d %@", timeinfo.tm_mday, monthNameGenShort(timeinfo.tm_mon)];
-        }*/
-        else
-        {
-            if (value_monthFirst)
-                return [[NSString alloc] initWithFormat:@"%d%c%d%c%02d", timeinfo.tm_mon + 1, value_date_separator, timeinfo.tm_mday, value_date_separator, timeinfo.tm_year - 100];
-            else
-                return [[NSString alloc] initWithFormat:@"%d%c%02d%c%02d", timeinfo.tm_mday, value_date_separator, timeinfo.tm_mon + 1, value_date_separator, timeinfo.tm_year - 100];
-        }
-    }
-    
-    return nil;
+        return [[NSString alloc] initWithFormat:@"%d%c%02d%c%02d", timeinfo.tm_mday, value_date_separator, timeinfo.tm_mon + 1, value_date_separator, timeinfo.tm_year - 100];
 }
 
 + (NSString *)stringForLastSeen:(int)date
